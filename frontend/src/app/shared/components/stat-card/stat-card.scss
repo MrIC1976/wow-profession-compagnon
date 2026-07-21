@@ -1,0 +1,52 @@
+.stat-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 2rem;
+
+    border-radius: 16px;
+
+    background: #1e293b;
+
+    box-shadow: 0 8px 20px rgba(0,0,0,.30);
+
+    transition: .25s;
+}
+
+.stat-card:hover {
+
+    transform: translateY(-4px);
+
+}
+
+.value {
+
+    font-size: 3rem;
+
+    font-weight: bold;
+
+    color: #d4af37;
+
+}
+
+.title {
+
+    font-size: 1.1rem;
+
+}
+
+.icon {
+
+    font-size: 42px;
+
+    color: #3b82f6;
+
+}

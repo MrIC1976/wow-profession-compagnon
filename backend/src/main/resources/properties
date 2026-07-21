@@ -1,0 +1,19 @@
+spring.application.name=WoW Profession Compagnon Backend
+
+server.port=8080
+
+# ----------------------------------------------------
+# LOGGING
+# ----------------------------------------------------
+
+logging.level.root=INFO
+
+logging.level.fr.emeric=DEBUG
+
+# ----------------------------------------------------
+# JACKSON
+# ----------------------------------------------------
+
+spring.jackson.default-property-inclusion=non_null
+
+spring.jackson.serialization.indent-output=true

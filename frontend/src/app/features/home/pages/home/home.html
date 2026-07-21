@@ -1,0 +1,53 @@
+<section class="home">
+
+  <h1>⚔️ WoW Profession Compagnon</h1>
+
+  <p class="subtitle">
+    Le compagnon ultime pour tous les métiers de World of Warcraft.
+  </p>
+
+  <div class="card">
+
+    <h2>État du Backend</h2>
+
+    @if (backendOnline) {
+
+      <p class="online">
+        🟢 Backend connecté
+      </p>
+
+      <p><strong>Application :</strong> {{ backend?.application }}</p>
+
+      <p><strong>Version :</strong> {{ backend?.version }}</p>
+
+      <p><strong>Statut :</strong> {{ backend?.status }}</p>
+
+    } @else {
+
+      <p class="offline">
+        🔴 {{ error }}
+      </p>
+
+    }
+
+  </div>
+
+  <div class="card">
+
+    <h2>Statistiques</h2>
+
+    <ul>
+
+      <li>⚒️ Métiers : 13</li>
+
+      <li>📦 Matériaux : à venir</li>
+
+      <li>📜 Recettes : à venir</li>
+
+      <li>🗺️ Zones : à venir</li>
+
+    </ul>
+
+  </div>
+
+</section>

@@ -1,0 +1,37 @@
+<div class="dashboard">
+
+  <h1>⚔️ Tableau de bord</h1>
+
+  <p>
+    Bienvenue dans <strong>WoW Profession Compagnon</strong>.
+  </p>
+
+  <hr>
+
+  @if (connected) {
+
+    <div class="status success">
+
+      <h2>🟢 Backend connecté</h2>
+
+      <p><strong>Application :</strong> {{ backend?.application }}</p>
+
+      <p><strong>Version :</strong> {{ backend?.version }}</p>
+
+      <p><strong>État :</strong> {{ backend?.status }}</p>
+
+    </div>
+
+  } @else {
+
+    <div class="status error">
+
+      <h2>🔴 Backend indisponible</h2>
+
+      <p>{{ errorMessage }}</p>
+
+    </div>
+
+  }
+
+</div>
