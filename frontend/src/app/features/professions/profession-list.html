@@ -1,0 +1,69 @@
+<section class="professions-page">
+
+  <header class="page-header">
+    <p class="eyebrow">
+      WoW Profession Compagnon
+    </p>
+
+    <h1>Les métiers</h1>
+
+    <p class="page-description">
+      Découvre les principaux métiers de World of Warcraft
+      récupérés depuis notre backend Spring Boot.
+    </p>
+  </header>
+
+  @if (isLoading) {
+    <div class="state-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des métiers...</p>
+    </div>
+  }
+
+  @else if (errorMessage) {
+    <div class="state-container error-state">
+      <h2>Une erreur est survenue</h2>
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  @else if (professions.length === 0) {
+    <div class="state-container">
+      <p>Aucun métier n’est disponible.</p>
+    </div>
+  }
+
+  @else {
+    <div class="professions-grid">
+
+      @for (
+        profession of professions;
+        track profession.id
+      ) {
+        <mat-card class="profession-card">
+
+          <img
+            class="profession-icon"
+            [src]="profession.icon"
+            [alt]="'Icône du métier ' + profession.name"
+            loading="lazy"
+          />
+
+          <mat-card-header>
+            <mat-card-title>
+              {{ profession.name }}
+            </mat-card-title>
+
+            <mat-card-subtitle>
+              Identifiant Blizzard :
+              {{ profession.id }}
+            </mat-card-subtitle>
+          </mat-card-header>
+
+        </mat-card>
+      }
+
+    </div>
+  }
+
+</section>

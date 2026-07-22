@@ -1,38 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
 import { Profession } from '../../shared/models/profession.model';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfessionService {
 
-  getAll(): Profession[] {
+  private readonly http = inject(HttpClient);
 
-    return [
-
-      {
-        id: 164,
-        name: 'Forge',
-        icon: 'construction',
-        type: 'PRIMARY'
-      },
-
-      {
-        id: 165,
-        name: 'Travail du cuir',
-        icon: 'checkroom',
-        type: 'PRIMARY'
-      },
-
-      {
-        id: 171,
-        name: 'Alchimie',
-        icon: 'science',
-        type: 'PRIMARY'
-      }
-
-    ];
-
+  public getProfessions(): Observable<Profession[]> {
+    return this.http.get<Profession[]>(
+      `${ApiConfig.BASE_URL}/professions`
+    );
   }
-
 }

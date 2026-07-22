@@ -1,53 +1,52 @@
-<section class="home">
+<section class="home-page">
 
-  <h1>⚔️ WoW Profession Compagnon</h1>
+  <header class="page-header">
+    <h1>WoW Profession Compagnon</h1>
 
-  <p class="subtitle">
-    Le compagnon ultime pour tous les métiers de World of Warcraft.
-  </p>
+    <p>
+      Bienvenue dans votre compagnon World of Warcraft.
+    </p>
+  </header>
 
-  <div class="card">
+  <section class="backend-status">
 
     <h2>État du Backend</h2>
 
-    @if (backendOnline) {
+    @if (backendOnline && backend) {
 
-      <p class="online">
-        🟢 Backend connecté
-      </p>
+      <p>🟢 Backend connecté</p>
 
-      <p><strong>Application :</strong> {{ backend?.application }}</p>
+      <ul>
+        <li>
+          <strong>Application :</strong>
+          {{ backend.application }}
+        </li>
 
-      <p><strong>Version :</strong> {{ backend?.version }}</p>
+        <li>
+          <strong>Version :</strong>
+          {{ backend.version }}
+        </li>
 
-      <p><strong>Statut :</strong> {{ backend?.status }}</p>
+        <li>
+          <strong>Statut :</strong>
+          {{ backend.status }}
+        </li>
+      </ul>
 
     } @else {
 
-      <p class="offline">
-        🔴 {{ error }}
-      </p>
+      <p>🔴 {{ error }}</p>
 
     }
 
-  </div>
+  </section>
 
-  <div class="card">
+  <hr>
 
-    <h2>Statistiques</h2>
+  <!-- ========================================================= -->
+  <!-- Liste des métiers récupérés depuis Spring Boot            -->
+  <!-- ========================================================= -->
 
-    <ul>
-
-      <li>⚒️ Métiers : 13</li>
-
-      <li>📦 Matériaux : à venir</li>
-
-      <li>📜 Recettes : à venir</li>
-
-      <li>🗺️ Zones : à venir</li>
-
-    </ul>
-
-  </div>
+  <app-profession-list></app-profession-list>
 
 </section>

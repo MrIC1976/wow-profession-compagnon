@@ -1,8 +1,15 @@
 /**
  * ============================================================================
- * Modèle représentant un métier de World of Warcraft.
+ * Fichier : profession.model.ts
+ * Projet : WoW Profession Compagnon
+ * ----------------------------------------------------------------------------
+ * Représente un métier de World of Warcraft.
+ *
+ * Cette interface correspond exactement au JSON renvoyé
+ * par l'API Spring Boot.
  * ============================================================================
  */
+
 export interface Profession {
 
   /**
@@ -12,17 +19,12 @@ export interface Profession {
 
   /**
    * Nom du métier.
-   * Exemple : Forge.
    */
   name: string;
 
   /**
-   * Icône associée.
+   * Icône du métier.
    */
   icon: string;
 
-  /**
-   * Type du métier.
-   */
-  type: 'PRIMARY' | 'SECONDARY';
 }

@@ -1,0 +1,90 @@
+.professions-page {
+  padding: 2rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12rem;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.page-header h1 {
+  margin: 0.25rem 0;
+  font-size: 2.5rem;
+}
+
+.page-description {
+  margin: 0;
+  opacity: 0.85;
+}
+
+.professions-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.profession-card {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem;
+  text-align: center;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.profession-card:hover {
+  transform: translateY(-4px);
+}
+
+.profession-icon {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+mat-card-header {
+  justify-content: center;
+  width: 100%;
+}
+
+mat-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.state-container {
+  display: flex;
+  min-height: 200px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.error-state {
+  color: #ff6b6b;
+}
+
+@media (max-width: 600px) {
+  .professions-page {
+    padding: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+  }
+}

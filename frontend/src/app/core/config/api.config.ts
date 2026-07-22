@@ -1,13 +1,9 @@
 /**
- * ============================================================================
- * Configuration des URLs du backend.
- * ============================================================================
+ * Adresse relative utilisée par Angular.
+ *
+ * Les requêtes /api sont transmises à Spring Boot
+ * par le proxy défini dans proxy.conf.json.
  */
 export const ApiConfig = {
-
-  /**
-   * URL du backend Spring Boot.
-   */
-  BASE_URL: 'http://localhost:8080/api'
-
-};
+  BASE_URL: '/api'
+} as const;
