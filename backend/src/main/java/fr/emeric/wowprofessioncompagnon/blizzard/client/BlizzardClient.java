@@ -4,10 +4,13 @@ import fr.emeric.wowprofessioncompagnon.blizzard.auth.BlizzardTokenService;
 import fr.emeric.wowprofessioncompagnon.blizzard.config.BlizzardProperties;
 import fr.emeric.wowprofessioncompagnon.common.exception.BlizzardApiException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Client générique permettant de communiquer avec l'API Blizzard.
@@ -16,6 +19,9 @@ import org.springframework.web.client.RestClientException;
  */
 @Component
 public class BlizzardClient {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(BlizzardClient.class);
 
     private final RestClient restClient;
     private final BlizzardTokenService tokenService;
@@ -53,12 +59,45 @@ public class BlizzardClient {
                     )
                     .retrieve()
                     .body(responseType);
+
+        } catch (RestClientResponseException exception) {
+            LOGGER.error(
+                    "Erreur HTTP Blizzard pour {} : statut={}, réponse={}",
+                    path,
+                    exception.getStatusCode(),
+                    exception.getResponseBodyAsString()
+            );
+
+            throw new BlizzardApiException(
+                    "Impossible de communiquer avec l'API Blizzard.",
+                    exception
+            );
+
         } catch (RestClientException exception) {
+            LOGGER.error(
+                    "Erreur technique lors de l'appel Blizzard pour {}.",
+                    path,
+                    exception
+            );
+
             throw new BlizzardApiException(
                     "Impossible de communiquer avec l'API Blizzard.",
                     exception
             );
         }
+    }
+
+    /**
+     * Exécute une requête GET et retourne la réponse JSON brute.
+     *
+     * Cette méthode est utilisée lors de la découverte d'une ressource
+     * Blizzard qui n'est pas encore représentée par un DTO Java.
+     *
+     * @param path chemin de la ressource Blizzard
+     * @return réponse JSON brute
+     */
+    public String getRaw(String path) {
+        return get(path, String.class);
     }
 
     /**

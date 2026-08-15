@@ -41,5 +41,4 @@ public class BlizzardProfessionService {
 
         return ProfessionMapper.toDomain(response.professions());
     }
-
 }
