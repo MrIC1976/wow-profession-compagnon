@@ -37,17 +37,39 @@ public class RecipeEntity {
     @JoinColumn(name = "horde_crafted_item_id")
     private ItemEntity hordeCraftedItem;
 
+    @Column(
+            name = "detail_synchronized",
+            nullable = false
+    )
+    private boolean detailSynchronized;
+
     public RecipeEntity() {
     }
 
+    /**
+     * Construit une référence minimale vers une recette.
+     *
+     * Une recette créée de cette manière n'est pas encore
+     * considérée comme synchronisée en détail.
+     *
+     * @param id identifiant Blizzard
+     * @param name nom de la recette
+     */
     public RecipeEntity(
             Integer id,
             String name
     ) {
         this.id = id;
         this.name = name;
+        this.detailSynchronized = false;
     }
 
+    /**
+     * Construit les données détaillées d'une recette.
+     *
+     * Le marqueur de synchronisation est positionné explicitement
+     * par le service une fois toute la synchronisation terminée.
+     */
     public RecipeEntity(
             Integer id,
             String name,
@@ -62,6 +84,7 @@ public class RecipeEntity {
         this.craftedQuantity = craftedQuantity;
         this.allianceCraftedItem = allianceCraftedItem;
         this.hordeCraftedItem = hordeCraftedItem;
+        this.detailSynchronized = false;
     }
 
     public Integer getId() {
@@ -114,6 +137,16 @@ public class RecipeEntity {
             ItemEntity hordeCraftedItem
     ) {
         this.hordeCraftedItem = hordeCraftedItem;
+    }
+
+    public boolean isDetailSynchronized() {
+        return detailSynchronized;
+    }
+
+    public void setDetailSynchronized(
+            boolean detailSynchronized
+    ) {
+        this.detailSynchronized = detailSynchronized;
     }
 
     /**

@@ -158,12 +158,6 @@ public class ProfessionService {
                 );
     }
 
-    /**
-     * Synchronise tous les skill tiers déjà connus
-     * pour une profession.
-     *
-     * @return nombre total de catégories synchronisées
-     */
     public int synchronizeAllSkillTiers(
             int professionId
     ) {
@@ -185,14 +179,6 @@ public class ProfessionService {
         return categoryCount;
     }
 
-    /**
-     * Synchronise complètement une profession :
-     * détail, références des skill tiers et contenu complet
-     * de tous ses skill tiers.
-     *
-     * @param professionId identifiant Blizzard
-     * @return nombre total de catégories synchronisées
-     */
     public int synchronizeProfession(
             int professionId
     ) {
@@ -207,5 +193,35 @@ public class ProfessionService {
         return synchronizeAllSkillTiers(
                 professionId
         );
+    }
+
+    public int synchronizeSkillTierRecipes(
+            int professionId,
+            int skillTierId
+    ) {
+        return professionSynchronizationService
+                .synchronizeRecipesForSkillTier(
+                        professionId,
+                        skillTierId
+                );
+    }
+
+    /**
+     * Synchronise un lot de recettes incomplètes
+     * pour une profession.
+     *
+     * @param professionId identifiant Blizzard
+     * @param limit taille maximale du lot
+     * @return nombre de recettes synchronisées
+     */
+    public int synchronizeProfessionRecipes(
+            int professionId,
+            int limit
+    ) {
+        return professionSynchronizationService
+                .synchronizeRecipeBatchForProfession(
+                        professionId,
+                        limit
+                );
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -65,10 +66,6 @@ public class ProfessionController {
                 );
     }
 
-    /**
-     * Synchronise toutes les professions,
-     * sans synchroniser le contenu complet de leurs skill tiers.
-     */
     @PostMapping("/synchronize")
     public SynchronizationResponse synchronizeProfessions() {
         return new SynchronizationResponse(
@@ -76,10 +73,6 @@ public class ProfessionController {
         );
     }
 
-    /**
-     * Synchronise complètement une seule profession :
-     * détail, références et contenu de tous ses skill tiers.
-     */
     @PostMapping("/{professionId}/synchronize")
     public SynchronizationResponse synchronizeProfession(
             @PathVariable int professionId
@@ -91,10 +84,6 @@ public class ProfessionController {
         );
     }
 
-    /**
-     * Synchronise tous les skill tiers déjà connus
-     * d'une profession.
-     */
     @PostMapping("/{professionId}/skill-tiers/synchronize")
     public SynchronizationResponse synchronizeAllSkillTiers(
             @PathVariable int professionId
@@ -106,9 +95,6 @@ public class ProfessionController {
         );
     }
 
-    /**
-     * Synchronise un skill tier précis.
-     */
     @PostMapping(
             "/{professionId}/skill-tiers/{skillTierId}/synchronize"
     )
@@ -120,6 +106,45 @@ public class ProfessionController {
                 professionService.synchronizeSkillTier(
                         professionId,
                         skillTierId
+                )
+        );
+    }
+
+    @PostMapping(
+            "/{professionId}/skill-tiers/{skillTierId}/recipes/synchronize"
+    )
+    public SynchronizationResponse synchronizeSkillTierRecipes(
+            @PathVariable int professionId,
+            @PathVariable int skillTierId
+    ) {
+        return new SynchronizationResponse(
+                professionService.synchronizeSkillTierRecipes(
+                        professionId,
+                        skillTierId
+                )
+        );
+    }
+
+    /**
+     * Synchronise un lot de recettes incomplètes
+     * référencées par une profession.
+     *
+     * Par défaut, 50 recettes maximum sont traitées.
+     * Le backend impose également une limite absolue de 100.
+     *
+     * @param professionId identifiant Blizzard
+     * @param limit nombre maximal de recettes à traiter
+     * @return nombre de recettes synchronisées
+     */
+    @PostMapping("/{professionId}/recipes/synchronize")
+    public SynchronizationResponse synchronizeProfessionRecipes(
+            @PathVariable int professionId,
+            @RequestParam(defaultValue = "50") int limit
+    ) {
+        return new SynchronizationResponse(
+                professionService.synchronizeProfessionRecipes(
+                        professionId,
+                        limit
                 )
         );
     }

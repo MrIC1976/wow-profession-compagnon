@@ -20,7 +20,9 @@ import fr.emeric.wowprofessioncompagnon.profession.repository.ProfessionSkillTie
 import fr.emeric.wowprofessioncompagnon.profession.repository.ProfessionSkillTierRepository;
 import fr.emeric.wowprofessioncompagnon.recipe.entity.RecipeEntity;
 import fr.emeric.wowprofessioncompagnon.recipe.repository.RecipeRepository;
+import fr.emeric.wowprofessioncompagnon.recipe.synchronization.RecipeSynchronizationService;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,11 +31,14 @@ import java.util.List;
 
 /**
  * Service permettant de synchroniser les professions,
- * leurs skill tiers, leurs catégories et leurs références
- * de recettes depuis Blizzard vers PostgreSQL.
+ * leurs skill tiers, leurs catégories, leurs références
+ * de recettes et les recettes détaillées depuis Blizzard
+ * vers PostgreSQL.
  */
 @Service
 public class ProfessionSynchronizationService {
+
+    private static final int MAX_RECIPE_BATCH_SIZE = 100;
 
     private final BlizzardProfessionService blizzardProfessionService;
     private final BlizzardProfessionDetailService blizzardProfessionDetailService;
@@ -44,6 +49,7 @@ public class ProfessionSynchronizationService {
     private final ProfessionSkillTierCategoryRepository categoryRepository;
     private final ProfessionSkillTierCategoryRecipeRepository categoryRecipeRepository;
     private final RecipeRepository recipeRepository;
+    private final RecipeSynchronizationService recipeSynchronizationService;
 
     public ProfessionSynchronizationService(
             BlizzardProfessionService blizzardProfessionService,
@@ -53,7 +59,8 @@ public class ProfessionSynchronizationService {
             ProfessionSkillTierRepository professionSkillTierRepository,
             ProfessionSkillTierCategoryRepository categoryRepository,
             ProfessionSkillTierCategoryRecipeRepository categoryRecipeRepository,
-            RecipeRepository recipeRepository
+            RecipeRepository recipeRepository,
+            RecipeSynchronizationService recipeSynchronizationService
     ) {
         this.blizzardProfessionService = blizzardProfessionService;
         this.blizzardProfessionDetailService = blizzardProfessionDetailService;
@@ -63,6 +70,7 @@ public class ProfessionSynchronizationService {
         this.categoryRepository = categoryRepository;
         this.categoryRecipeRepository = categoryRecipeRepository;
         this.recipeRepository = recipeRepository;
+        this.recipeSynchronizationService = recipeSynchronizationService;
     }
 
     /**
@@ -201,11 +209,109 @@ public class ProfessionSynchronizationService {
     }
 
     /**
+     * Synchronise en détail uniquement les recettes incomplètes
+     * référencées par un skill tier.
+     *
+     * @param professionId identifiant Blizzard de la profession
+     * @param skillTierId identifiant Blizzard du skill tier
+     * @return nombre de recettes synchronisées
+     */
+    public int synchronizeRecipesForSkillTier(
+            int professionId,
+            int skillTierId
+    ) {
+        if (professionSkillTierRepository
+                .findByProfessionIdAndSkillTierId(
+                        professionId,
+                        skillTierId
+                )
+                .isEmpty()) {
+            return 0;
+        }
+
+        List<Integer> recipeIds =
+                categoryRecipeRepository
+                        .findDistinctIncompleteRecipeIdsBySkillTierId(
+                                skillTierId
+                        );
+
+        return synchronizeRecipeIds(
+                recipeIds
+        );
+    }
+
+    /**
+     * Synchronise un lot de recettes incomplètes
+     * appartenant à une profession.
+     *
+     * Le nombre demandé est limité à 100 recettes maximum
+     * afin d'éviter une rafale excessive d'appels Blizzard.
+     *
+     * @param professionId identifiant Blizzard de la profession
+     * @param limit taille maximale du lot
+     * @return nombre de recettes synchronisées
+     */
+    public int synchronizeRecipeBatchForProfession(
+            int professionId,
+            int limit
+    ) {
+        if (!professionRepository.existsById(professionId)) {
+            return 0;
+        }
+
+        int batchSize =
+                Math.max(
+                        1,
+                        Math.min(
+                                limit,
+                                MAX_RECIPE_BATCH_SIZE
+                        )
+                );
+
+        List<Integer> recipeIds =
+                categoryRecipeRepository
+                        .findDistinctIncompleteRecipeIdsByProfessionId(
+                                professionId,
+                                PageRequest.of(
+                                        0,
+                                        batchSize
+                                )
+                        );
+
+        return synchronizeRecipeIds(
+                recipeIds
+        );
+    }
+
+    /**
+     * Synchronise une liste d'identifiants de recettes.
+     *
+     * @param recipeIds identifiants Blizzard
+     * @return nombre de recettes synchronisées
+     */
+    private int synchronizeRecipeIds(
+            List<Integer> recipeIds
+    ) {
+        int synchronizedRecipeCount = 0;
+
+        for (Integer recipeId : recipeIds) {
+
+            if (recipeId == null) {
+                continue;
+            }
+
+            synchronizedRecipeCount +=
+                    recipeSynchronizationService
+                            .synchronizeRecipes(recipeId)
+                            .size();
+        }
+
+        return synchronizedRecipeCount;
+    }
+
+    /**
      * Récupère et enregistre le détail d'une profession,
      * puis synchronise les références de ses skill tiers.
-     *
-     * @param professionId identifiant Blizzard
-     * @return profession persistée ou null
      */
     private ProfessionEntity synchronizeProfessionDetail(
             int professionId

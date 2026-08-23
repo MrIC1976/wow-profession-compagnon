@@ -18,11 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Service permettant de synchroniser les recettes entre l'API Blizzard
- * et la base de données.
+ * Service permettant de synchroniser les recettes entre
+ * l'API Blizzard et PostgreSQL.
  */
 @Service
 public class RecipeSynchronizationService {
+
+    private static final String UNKNOWN_ITEM_NAME_PREFIX =
+            "Objet Blizzard ";
 
     private final BlizzardRecipeService blizzardRecipeService;
     private final RecipeRepository recipeRepository;
@@ -45,12 +48,16 @@ public class RecipeSynchronizationService {
      * Synchronise une recette Blizzard ainsi que les objets
      * et composants qui lui sont associés.
      *
+     * La recette n'est marquée comme synchronisée en détail
+     * qu'une fois l'ensemble de l'opération terminé.
+     *
      * @param recipeId identifiant Blizzard de la recette
      * @return liste des recettes synchronisées
      */
     @Transactional
-    public List<RecipeEntity> synchronizeRecipes(int recipeId) {
-
+    public List<RecipeEntity> synchronizeRecipes(
+            int recipeId
+    ) {
         BlizzardRecipeDetailDto recipe =
                 blizzardRecipeService.getRecipeDetail(recipeId);
 
@@ -59,19 +66,24 @@ public class RecipeSynchronizationService {
         }
 
         ItemEntity allianceCraftedItem =
-                synchronizeItem(recipe.allianceCraftedItem());
+                synchronizeItem(
+                        recipe.allianceCraftedItem()
+                );
 
         ItemEntity hordeCraftedItem =
-                synchronizeItem(recipe.hordeCraftedItem());
+                synchronizeItem(
+                        recipe.hordeCraftedItem()
+                );
 
-        RecipeEntity entity = new RecipeEntity(
-                recipe.id(),
-                recipe.name(),
-                recipe.description(),
-                getCraftedQuantity(recipe),
-                allianceCraftedItem,
-                hordeCraftedItem
-        );
+        RecipeEntity entity =
+                new RecipeEntity(
+                        recipe.id(),
+                        recipe.name(),
+                        recipe.description(),
+                        getCraftedQuantity(recipe),
+                        allianceCraftedItem,
+                        hordeCraftedItem
+                );
 
         RecipeEntity savedRecipe =
                 recipeRepository.save(entity);
@@ -85,11 +97,25 @@ public class RecipeSynchronizationService {
                 recipe.reagents()
         );
 
-        return List.of(savedRecipe);
+        savedRecipe.setDetailSynchronized(true);
+
+        RecipeEntity synchronizedRecipe =
+                recipeRepository.save(savedRecipe);
+
+        return List.of(
+                synchronizedRecipe
+        );
     }
 
     /**
-     * Synchronise un objet Blizzard.
+     * Synchronise une référence d'objet Blizzard.
+     *
+     * Blizzard peut exceptionnellement retourner une référence
+     * contenant un identifiant mais aucun nom.
+     *
+     * Si l'objet existe déjà dans PostgreSQL, son nom actuel
+     * est conservé. Sinon, un nom technique temporaire est utilisé
+     * afin de respecter la contrainte NOT NULL de la base.
      *
      * @param item objet Blizzard
      * @return objet persisté ou null
@@ -101,9 +127,36 @@ public class RecipeSynchronizationService {
             return null;
         }
 
-        return itemRepository.save(
-                ItemMapper.toEntity(item)
-        );
+        if (hasUsableName(item.name())) {
+            return itemRepository.save(
+                    ItemMapper.toEntity(item)
+            );
+        }
+
+        return itemRepository
+                .findById(item.id())
+                .orElseGet(
+                        () -> itemRepository.save(
+                                new ItemEntity(
+                                        item.id(),
+                                        UNKNOWN_ITEM_NAME_PREFIX
+                                                + item.id()
+                                )
+                        )
+                );
+    }
+
+    /**
+     * Indique si un nom Blizzard est exploitable.
+     *
+     * @param name nom à vérifier
+     * @return true si le nom n'est ni null ni vide
+     */
+    private boolean hasUsableName(
+            String name
+    ) {
+        return name != null
+                && !name.isBlank();
     }
 
     /**
@@ -120,24 +173,26 @@ public class RecipeSynchronizationService {
             return;
         }
 
-        List<RecipeReagentEntity> entities = reagents.stream()
-                .filter(reagent ->
-                        reagent != null
-                                && reagent.reagent() != null
-                )
-                .map(reagent -> {
+        List<RecipeReagentEntity> entities =
+                reagents.stream()
+                        .filter(reagent ->
+                                reagent != null
+                                        && reagent.reagent() != null
+                        )
+                        .map(reagent -> {
+                            ItemEntity item =
+                                    synchronizeItem(
+                                            reagent.reagent()
+                                    );
 
-                    ItemEntity item =
-                            synchronizeItem(reagent.reagent());
-
-                    return new RecipeReagentEntity(
-                            recipe,
-                            item,
-                            reagent.quantity(),
-                            reagent.recraftQuantity()
-                    );
-                })
-                .toList();
+                            return new RecipeReagentEntity(
+                                    recipe,
+                                    item,
+                                    reagent.quantity(),
+                                    reagent.recraftQuantity()
+                            );
+                        })
+                        .toList();
 
         recipeReagentRepository.saveAll(entities);
     }

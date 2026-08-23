@@ -55,6 +55,10 @@ public final class ItemMapper {
     /**
      * Convertit une référence Blizzard en entité persistable.
      *
+     * Le DTO doit posséder un nom exploitable.
+     * La gestion des références Blizzard sans nom
+     * est effectuée par le service de synchronisation.
+     *
      * @param dto objet Blizzard
      * @return entité
      */

@@ -2,6 +2,7 @@ package fr.emeric.wowprofessioncompagnon.profession.repository;
 
 import fr.emeric.wowprofessioncompagnon.profession.entity.ProfessionSkillTierCategoryRecipeEntity;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -34,6 +35,45 @@ public interface ProfessionSkillTierCategoryRecipeRepository
             """)
     List<ProfessionSkillTierCategoryRecipeEntity> findAllByCategoryId(
             @Param("categoryId") Long categoryId
+    );
+
+    /**
+     * Retourne les identifiants distincts des recettes
+     * qui n'ont pas encore été synchronisées en détail
+     * pour un skill tier.
+     *
+     * @param skillTierId identifiant Blizzard du skill tier
+     * @return identifiants des recettes à synchroniser
+     */
+    @Query("""
+            select distinct association.recipe.id
+            from ProfessionSkillTierCategoryRecipeEntity association
+            where association.category.skillTier.id = :skillTierId
+              and association.recipe.detailSynchronized = false
+            order by association.recipe.id
+            """)
+    List<Integer> findDistinctIncompleteRecipeIdsBySkillTierId(
+            @Param("skillTierId") Integer skillTierId
+    );
+
+    /**
+     * Retourne un lot de recettes distinctes qui n'ont pas
+     * encore été synchronisées en détail pour une profession.
+     *
+     * @param professionId identifiant Blizzard de la profession
+     * @param pageable taille maximale du lot
+     * @return identifiants des recettes à synchroniser
+     */
+    @Query("""
+            select distinct association.recipe.id
+            from ProfessionSkillTierCategoryRecipeEntity association
+            where association.category.skillTier.profession.id = :professionId
+              and association.recipe.detailSynchronized = false
+            order by association.recipe.id
+            """)
+    List<Integer> findDistinctIncompleteRecipeIdsByProfessionId(
+            @Param("professionId") Integer professionId,
+            Pageable pageable
     );
 
     /**
