@@ -4,8 +4,6 @@ package fr.emeric.wowprofessioncompagnon.blizzard.dto;
  * Représente la quantité produite par une recette Blizzard.
  */
 public record BlizzardCraftedQuantityDto(
-
-        double value
-
+        Double value
 ) {
 }
